@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Tauri Dev (macOS)",
+      "cargo": {
+        "args": ["build", "--manifest-path", "${workspaceFolder}/src-tauri/Cargo.toml"],
+        "filter": { "name": "velocity-core", "kind": "bin" }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "npm: dev"
+    }
+  ]
+}

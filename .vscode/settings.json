@@ -1,0 +1,16 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.venv": true
+  },
+  "rust-analyzer.cargo.target": "aarch64-apple-darwin",
+  "rust-analyzer.linkedProjects": ["src-tauri/Cargo.toml"],
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+}

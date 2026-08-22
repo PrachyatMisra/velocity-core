@@ -1,0 +1,45 @@
+{
+  "name": "velocity-core",
+  "version": "3.0.0",
+  "description": "2026-standard macOS system monitor, benchmarker, and AI diagnostic platform",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build --bundles app",
+    "tauri:build:all": "tauri build",
+    "preview": "vite preview",
+    "setup": "bash scripts/setup.sh",
+    "sidecar": "bash scripts/build_sidecar.sh",
+    "dmg": "bash scripts/create_dmg.sh",
+    "lint": "tsc --noEmit",
+    "build:all": "bash scripts/build_all.sh",
+    "build:release": "bash scripts/build_all.sh --release",
+    "build:dmg": "bash scripts/build_all.sh --release --dmg",
+    "clean": "rm -rf dist target/release/bundle src-tauri/target/release/bundle node_modules/.cache"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-notification": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.0.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.12.7",
+    "three": "^0.165.0",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.165.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}

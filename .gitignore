@@ -1,0 +1,19 @@
+node_modules/
+dist/
+
+# Rust build outputs
+/target/
+src-tauri/target/
+
+# sidecar and python artifacts
+src-tauri/binaries/vcx
+src-tauri/binaries/vcx-*
+sidecar/.venv/
+sidecar/__pycache__/
+sidecar/build/
+sidecar/dist/
+sidecar/*.spec
+*.pyc
+.DS_Store
+*.dmg
+final-delivery/
