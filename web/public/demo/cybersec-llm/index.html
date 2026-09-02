@@ -5,66 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CybersecLLM — Live Demo</title>
 <style>
-  :root { --bg:#05060a; --fg:#e8edf5; --acc:#36d1a6; --mut:#8b94a7; --line:#1c2330; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); }
-  header { padding:28px 22px 10px; }
-  h1 { font-size:22px; margin:0 0 4px; letter-spacing:.3px; }
-  .sub { color:var(--mut); font-size:13px; max-width:760px; line-height:1.5; }
-  .wrap { display:grid; grid-template-columns:1.3fr .9fr; gap:18px; padding:16px 22px 34px; }
-  @media(max-width:820px){ .wrap { grid-template-columns:1fr; } }
-  .card { background:#0b0f17; border:1px solid var(--line); border-radius:12px; padding:14px; }
-  .card h2 { font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--acc); margin:0 0 10px; }
-  svg { width:100%; height:380px; display:block; }
-  .node { cursor:pointer; }
-  .node circle { fill:#16203a; stroke:var(--acc); stroke-width:1.5; }
-  .node text { fill:var(--fg); font-size:11px; pointer-events:none; }
-  .edge { stroke:#27324a; stroke-width:1; }
-  textarea, input { width:100%; background:#070a11; color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:9px; font-size:13px; font-family:inherit; }
-  .btn { margin-top:8px; background:var(--acc); color:#04130d; border:0; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; }
-  .detail { font-size:13px; color:var(--mut); line-height:1.5; min-height:80px; }
-  .tag { display:inline-block; background:#11203a; color:#9fd9ff; border-radius:6px; padding:2px 7px; margin:3px 4px 0 0; font-size:12px; }
-  .pill { color:var(--acc); font-weight:600; }
+  :root{
+    --bg:#06070b; --panel:rgba(255,255,255,.04); --border:rgba(255,255,255,.09);
+    --fg:#e8edf5; --mut:#8b94a7; --acc:#36d1a6;
+    --actor:#ff5d6c; --cve:#ffa23a; --mal:#b07cff; --tech:#5b8cff; --vuln:#ffd84d; --sector:#46d17a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--fg);
+    background:radial-gradient(1200px 700px at 80% -10%,#0e1422 0%,var(--bg) 55%) fixed;
+    min-height:100%;
+  }
+  header{padding:30px 26px 6px}
+  h1{font-size:24px;margin:0;letter-spacing:.3px}
+  .tag{color:var(--acc);font-weight:700}
+  .sub{color:var(--mut);font-size:13.5px;max-width:820px;line-height:1.55;margin-top:6px}
+  .wrap{display:grid;grid-template-columns:minmax(320px,1fr) minmax(420px,1.4fr);gap:18px;padding:16px 26px 40px}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;backdrop-filter:blur(6px)}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:var(--acc);margin:0 0 12px}
+  textarea{width:100%;min-height:150px;background:#070a11;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;line-height:1.5;font-family:inherit;resize:vertical}
+  .btn{margin-top:10px;background:linear-gradient(180deg,#3fe0b2,#28b98f);color:#04130d;border:0;padding:9px 15px;border-radius:9px;font-weight:700;cursor:pointer;font-size:13px}
+  .btn:hover{filter:brightness(1.07)}
+  #graph{width:100%;height:440px;display:block;border-radius:12px;background:radial-gradient(600px 400px at 50% 30%,#0b1120,#070a11);cursor:grab}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12px;color:var(--mut)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .detail{margin-top:12px;font-size:13px;color:var(--mut);line-height:1.55;min-height:60px;border-top:1px solid var(--border);padding-top:10px}
+  .detail b{color:var(--fg)}
+  mark{background:transparent;font-weight:700;padding:0 1px;border-radius:3px}
+  .m-actor{color:var(--actor)} .m-cve{color:var(--cve)} .m-mal{color:var(--mal)} .m-tech{color:var(--tech)} .m-vuln{color:var(--vuln)}
+  .pill{display:inline-block;background:#11203a;color:#9fd9ff;border-radius:6px;padding:2px 8px;margin:3px 5px 0 0;font-size:12px}
+  .hint{font-size:12px;color:var(--mut);margin-top:8px}
 </style>
 </head>
 <body>
 <header>
-  <h1>CybersecLLM <span class="pill">— Live Demo</span></h1>
-  <div class="sub">An NLP pipeline that extracts structured threat intelligence (threat actors, CVEs, attack vectors, malware) from unstructured cybersecurity text and models it as a relationship graph in Neo4j. The interactive graph below is a client-side demo built from sample extractions; the "Extract" box shows the same highlighting the pipeline applies.</div>
+  <h1>CybersecLLM <span class="tag">— Live Demo</span></h1>
+  <div class="sub">An offline NLP pipeline (Ollama) that reads unstructured cyber threat text, extracts structured intelligence — actors, CVEs, malware, MITRE techniques — and models it as a relationship graph in Neo4j. The panel below runs the same extraction + graph rendering entirely client-side on sample data.</div>
 </header>
 <div class="wrap">
   <div class="card">
-    <h2>Threat Intelligence Graph</h2>
-    <svg id="graph" viewBox="0 0 600 380"></svg>
+    <h2>Threat Text → Entity Extraction</h2>
+    <textarea id="txt">CISA warned that APT29 leveraged a phishing campaign to deliver Cobalt Strike after exploiting CVE-2024-3094 for initial access. LockBit ransomware later targeted healthcare networks, abusing T1486 (Data Encrypted for Impact). A second advisory linked Lazarus Group to the DTrack backdoor via CVE-2023-34362.</textarea>
+    <button class="btn" id="run">Extract entities</button>
+    <div id="tags" style="margin-top:10px"></div>
+    <div class="hint">Highlights use the same regex/label logic the pipeline applies before graph insertion.</div>
   </div>
   <div class="card">
-    <h2>Entity Extractor</h2>
-    <textarea id="txt" rows="5">APT29 used a phishing campaign to deliver Cobalt Strike. CVE-2024-3094 was exploited for initial access. Ransomware LockBit targeted healthcare networks.</textarea>
-    <button class="btn" id="run">Extract entities</button>
-    <div id="out" style="margin-top:10px"></div>
-    <h2 style="margin-top:14px">Selected node</h2>
-    <div class="detail" id="detail">Click a node to inspect its type and relationships.</div>
+    <h2>Threat Intelligence Graph</h2>
+    <canvas id="graph"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--actor)"></i>Actor</span>
+      <span><i class="dot" style="background:var(--cve)"></i>CVE</span>
+      <span><i class="dot" style="background:var(--mal)"></i>Malware</span>
+      <span><i class="dot" style="background:var(--tech)"></i>Technique</span>
+      <span><i class="dot" style="background:var(--vuln)"></i>Vulnerability</span>
+      <span><i class="dot" style="background:var(--sector)"></i>Sector</span>
+    </div>
+    <div class="detail" id="detail">Click any node to inspect its type and relationships. Drag to reposition.</div>
   </div>
 </div>
+
 <script>
-const NODES = [
-  {id:"APT29", type:"Threat Actor", rel:"uses → Phishing; delivers → Cobalt Strike"},
-  {id:"Phishing", type:"Attack Vector", rel:"delivers → Cobalt Strike"},
-  {id:"Cobalt Strike", type:"Malware", rel:"delivered by → APT29"},
-  {id:"CVE-2024-3094", type:"Vulnerability", rel:"exploited for → Initial Access"},
-  {id:"Initial Access", type:"Tactic", rel:"via → CVE-2024-3094"},
-  {id:"LockBit", type:"Ransomware", rel:"targets → Healthcare"},
-  {id:"Healthcare", type:"Sector", rel:"targeted by → LockBit"}
+const COLORS={actor:"#ff5d6c",cve:"#ffa23a",mal:"#b07cff",tech:"#5b8cff",vuln:"#ffd84d",sector:"#46d17a"};
+const NODES=[
+  {id:"APT29",type:"actor",desc:"Russian-state threat group; prolific phishing & stealth tooling."},
+  {id:"Lazarus Group",type:"actor",desc:"North-Korea linked; financial & espionage operations."},
+  {id:"CVE-2024-3094",type:"cve",desc:"xZlib backdoor in upstream tar — used for initial access."},
+  {id:"CVE-2023-34362",type:"cve",desc:"Flaw abused to deploy the DTrack backdoor."},
+  {id:"Cobalt Strike",type:"mal",desc:"Adversary-simulation / C2 framework widely abused by APTs."},
+  {id:"LockBit",type:"mal",desc:"Ransomware-as-a-service targeting enterprises & healthcare."},
+  {id:"DTrack",type:"mal",desc:"Backdoor/info-stealer linked to Lazarus Group."},
+  {id:"T1486",type:"tech",desc:"MITRE ATT&CK: Data Encrypted for Impact."},
+  {id:"Healthcare",type:"sector",desc:"Critical-infrastructure sector frequently targeted."}
 ];
-const EDGES = [["APT29","Phishing"],["Phishing","Cobalt Strike"],["APT29","Cobalt Strike"],["CVE-2024-3094","Initial Access"],["LockBit","Healthcare"]];
-const pos = {};
-NODES.forEach((n,i)=>{ const a=i/NODES.length*Math.PI*2; pos[n.id]={x:300+150*Math.cos(a), y:190+120*Math.sin(a)}; });
-const svg=document.getElementById("graph");
-const NS="http://www.w3.org/2000/svg";
-EDGES.forEach(([a,b])=>{ const l=document.createElementNS(NS,"line"); l.setAttribute("class","edge"); l.setAttribute("x1",pos[a].x); l.setAttribute("y1",pos[a].y); l.setAttribute("x2",pos[b].x); l.setAttribute("y2",pos[b].y); svg.appendChild(l); });
-NODES.forEach(n=>{ const g=document.createElementNS(NS,"g"); g.setAttribute("class","node"); const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",pos[n.id].x); c.setAttribute("cy",pos[n.id].y); c.setAttribute("r",16); g.appendChild(c); const t=document.createElementNS(NS,"text"); t.setAttribute("x",pos[n.id].x); t.setAttribute("y",pos[n.id].y+4); t.setAttribute("text-anchor","middle"); t.textContent=n.id; g.appendChild(t); g.addEventListener("click",()=>{ document.getElementById("detail").innerHTML="<b>"+n.id+"</b> — "+n.type+"<br>"+n.rel; }); svg.appendChild(g); });
-const PATTERNS=[/APT\d+/g,/CVE-\d{4}-\d+/g,/Cobalt Strike|LockBit|Ransomware|Phishing/gi];
-document.getElementById("run").addEventListener("click",()=>{ const v=document.getElementById("txt").value; const out=document.getElementById("out"); out.innerHTML=""; const found=new Set(); PATTERNS.forEach(p=>{ (v.match(p)||[]).forEach(m=>found.add(m)); }); if(!found.size){ out.innerHTML='<span class="detail">No known entities detected in sample.</span>'; return; } [...found].forEach(m=>{ const s=document.createElement("span"); s.className="tag"; s.textContent=m; out.appendChild(s); }); });
+const EDGES=[
+  ["APT29","Cobalt Strike","delivers"],["APT29","CVE-2024-3094","exploits"],
+  ["Cobalt Strike","T1486","enables"],["LockBit","Healthcare","targets"],
+  ["LockBit","T1486","uses"],["Lazarus Group","DTrack","deploys"],
+  ["Lazarus Group","CVE-2023-34362","exploits"],["CVE-2024-3094","T1486","leads to"]
+];
+// init positions around center
+const W=600,H=440;
+NODES.forEach((n,i)=>{const a=i/NODES.length*Math.PI*2;n.x=W/2+150*Math.cos(a);n.y=H/2+150*Math.sin(a);n.vx=0;n.vy=0;n.r=18;});
+const E=EDGES.map(([a,b,l])=>({a:NODES.find(n=>n.id===a),b:NODES.find(n=>n.id===b),l}));
+const cv=document.getElementById("graph"),ctx=cv.getContext("2d");
+function resize(){const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+resize();window.addEventListener("resize",resize);
+let selected=null,drag=null;
+function step(){
+  for(const n of NODES){n.fx=0;n.fy=0;}
+  for(let i=0;i<NODES.length;i++)for(let j=i+1;j<NODES.length;j++){
+    const a=NODES[i],b=NODES[j];let dx=a.x-b.x,dy=a.y-b.y;let d=Math.hypot(dx,dy)||1;
+    const f=5200/(d*d);const ux=dx/d,uy=dy/d;a.fx+=ux*f;a.fy+=uy*f;b.fx-=ux*f;b.fy-=uy*f;
+  }
+  for(const e of E){let dx=e.b.x-e.a.x,dy=e.b.y-e.a.y;let d=Math.hypot(dx,dy)||1;const f=(d-110)*0.012;const ux=dx/d,uy=dy/d;e.a.fx+=ux*f;e.a.fy+=uy*f;e.b.fx-=ux*f;e.b.fy-=uy*f;}
+  const cx=W/2,cy=H/2;
+  for(const n of NODES){n.fx+=(cx-n.x)*0.002;n.fy+=(cy-n.y)*0.002;n.vx=(n.vx+n.fx)*0.85;n.vy=(n.vy+n.fy)*0.85;if(drag!==n){n.x+=n.vx*0.4;n.y+=n.vy*0.4;}n.x=Math.max(24,Math.min(W-24,n.x));n.y=Math.max(24,Math.min(H-24,n.y));}
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(const e of E){ctx.strokeStyle="rgba(120,140,180,.28)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(e.a.x,e.a.y);ctx.lineTo(e.b.x,e.b.y);ctx.stroke();}
+  for(const e of E){const mx=(e.a.x+e.b.x)/2,my=(e.a.y+e.b.y)/2;ctx.fillStyle="rgba(150,170,200,.55)";ctx.font="10px system-ui";ctx.fillText(e.l,mx+4,my);}
+  for(const n of NODES){
+    ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7);ctx.fillStyle=COLORS[n.type];ctx.globalAlpha=(selected&&selected!==n)?.35:1;ctx.fill();ctx.globalAlpha=1;
+    ctx.lineWidth=(selected===n)?3:1.5;ctx.strokeStyle=(selected===n)?"#fff":"rgba(255,255,255,.25)";ctx.stroke();
+    ctx.fillStyle="#eef";ctx.font="11px system-ui";ctx.textAlign="center";ctx.fillText(n.id.length>14?n.id.slice(0,12)+"…":n.id,n.x,n.y+n.r+13);ctx.textAlign="left";
+  }
+}
+function loop(){step();draw();requestAnimationFrame(loop);}loop();
+function pick(x,y){for(const n of NODES){if(Math.hypot(n.x-x,n.y-y)<n.r+4)return n;}return null;}
+cv.addEventListener("mousedown",e=>{const r=cv.getBoundingClientRect();const n=pick(e.clientX-r.left,e.clientY-r.top);drag=n;if(n)selected=n;});
+window.addEventListener("mouseup",()=>drag=null);
+cv.addEventListener("mousemove",e=>{if(!drag)return;const r=cv.getBoundingClientRect();drag.x=e.clientX-r.left;drag.y=e.clientY-r.top;});
+cv.addEventListener("click",e=>{const r=cv.getBoundingClientRect();const n=pick(e.clientX-r.left,e.clientY-r.top);if(n){selected=n;const rel=E.filter(x=>x.a===n||x.b===n).map(x=>x.a===n?x.b.id:x.a.id);document.getElementById("detail").innerHTML=`<b>${n.id}</b> — ${n.desc}<br>Connected to: ${rel.join(", ")}`;}
+});
+// extraction
+const RX=[{re:/CVE-\d{4}-\d+/g,cls:"m-cve",tag:"CVE"},{re:/APT\d+|Lazarus Group|Sandworm|FIN\d+/gi,cls:"m-actor",tag:"Actor"},{re:/Cobalt Strike|LockBit|DTrack|Emotet|TrickBot/gi,cls:"m-mal",tag:"Malware"},{re:/T\d{4}/g,cls:"m-tech",tag:"Technique"}];
+  document.getElementById("run").addEventListener("click",()=>{
+    const v=document.getElementById("txt").value;
+    const out=document.getElementById("tags");out.innerHTML="";const seen=new Set();
+    RX.forEach(({re,tag})=>{(v.match(re)||[]).forEach(m=>{if(!seen.has(m)){seen.add(m);const s=document.createElement("span");s.className="pill";s.textContent=m;out.appendChild(s);}});});
+    if(!seen.size) out.innerHTML='<span class="hint">No known entities detected in the sample.</span>';
+  });
 </script>
 </body>
 </html>
