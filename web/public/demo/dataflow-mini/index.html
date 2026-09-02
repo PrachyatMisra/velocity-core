@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DataFlow Mini ETL — Live Demo</title>
+<style>
+  :root { --bg:#05060a; --fg:#e8edf5; --acc:#5b8cff; --mut:#8b94a7; --line:#1c2330; --ok:#36d1a6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:28px 22px 10px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--mut); font-size:13px; max-width:780px; line-height:1.5; }
+  .wrap { padding:16px 22px 34px; }
+  .pipe { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0; }
+  .stage { background:#0b0f17; border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; opacity:.45; transition:.3s; }
+  .stage.active { opacity:1; border-color:var(--acc); box-shadow:0 0 0 1px var(--acc) inset; }
+  .stage .n { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--acc); }
+  .stage .d { font-size:12px; color:var(--mut); margin-top:6px; }
+  .btn { background:var(--acc); color:#04130d; border:0; padding:9px 14px; border-radius:8px; font-weight:600; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+  th,td { border:1px solid var(--line); padding:6px 8px; text-align:left; }
+  th { color:var(--acc); }
+  .card { background:#0b0f17; border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h2 { font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--ok); margin:0 0 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DataFlow Mini ETL <span style="color:var(--ok);font-weight:600">— Live Demo</span></h1>
+  <div class="sub">A small Python ETL pipeline: it pulls data from public REST APIs, cleans and reshapes it with Pandas, validates it, and loads it into PostgreSQL — containerized with Docker. The animation below shows the three stages; the table is sample data after the Transform step.</div>
+</header>
+<div class="wrap">
+  <div class="pipe">
+    <div class="stage" id="s1"><div class="n">Extract</div><div class="d">REST API → raw JSON</div></div>
+    <div class="stage" id="s2"><div class="n">Transform</div><div class="d">Pandas clean + validate</div></div>
+    <div class="stage" id="s3"><div class="n">Load</div><div class="d">→ PostgreSQL</div></div>
+  </div>
+  <button class="btn" id="run">Run pipeline</button>
+  <div class="card" style="margin-top:16px">
+    <h2>Transformed + validated rows</h2>
+    <table>
+      <tr><th>id</th><th>user</th><th>country</th><th>amount</th><th>status</th></tr>
+      <tr><td>1</td><td>amara</td><td>IN</td><td>142.50</td><td>valid</td></tr>
+      <tr><td>2</td><td>kenji</td><td>JP</td><td>88.00</td><td>valid</td></tr>
+      <tr><td>3</td><td>—</td><td>US</td><td>0.00</td><td>rejected (missing user)</td></tr>
+      <tr><td>4</td><td>luis</td><td>BR</td><td>310.75</td><td>valid</td></tr>
+    </table>
+  </div>
+</div>
+<script>
+document.getElementById("run").addEventListener("click",()=>{
+  ["s1","s2","s3"].forEach(id=>document.getElementById(id).classList.remove("active"));
+  const seq=["s1","s2","s3"];
+  seq.forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add("active"), i*650));
+});
+</script>
+</body>
+</html>
